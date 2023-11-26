@@ -30,6 +30,7 @@ async function run() {
 
     const usersCollections = client.db("exploreDB").collection("users");
     const packagesCollections = client.db("exploreDB").collection("packages");
+    const bookingsCollections = client.db("exploreDB").collection("bookings");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -80,9 +81,22 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/users/guide", async (req, res) => {
+    app.get("/users", async (req, res) => {
       const query = { role: { $nin: ["admin"] } };
       const result = await usersCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/users/guide", async (req, res) => {
+      const query = { role: { $nin: ["admin", "tourist"] } };
+      const result = await usersCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/guideDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await usersCollections.findOne(query);
       res.send(result);
     });
 
@@ -142,11 +156,30 @@ async function run() {
       res.send({ guide });
     });
 
-    // package route
+    // package server
     app.post("/addPackage", verifyToken, verifyAdmin, async (req, res) => {
       const package = req.body;
       const result = await packagesCollections.insertOne(package);
       res.send(package);
+    });
+
+    app.get("/packages", async (req, res) => {
+      const result = await packagesCollections.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/packageDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await packagesCollections.findOne(query);
+      res.send(result);
+    });
+
+    // bookings server
+    app.post("/addBooking", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingsCollections.insertOne(booking);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
