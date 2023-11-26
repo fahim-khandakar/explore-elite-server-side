@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 var jwt = require("jsonwebtoken");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 require("dotenv").config();
@@ -29,6 +29,7 @@ async function run() {
     await client.connect();
 
     const usersCollections = client.db("exploreDB").collection("users");
+    const packagesCollections = client.db("exploreDB").collection("packages");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -79,8 +80,33 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
-      const result = await usersCollections.find().toArray();
+    app.get("/users/guide", async (req, res) => {
+      const query = { role: { $nin: ["admin"] } };
+      const result = await usersCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    app.put("/users/makeAdmin/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await usersCollections.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
+    app.put("/users/makeGuide/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "guide",
+        },
+      };
+      const result = await usersCollections.updateOne(query, updatedDoc);
       res.send(result);
     });
 
@@ -114,6 +140,13 @@ async function run() {
         guide = user?.role === "guide";
       }
       res.send({ guide });
+    });
+
+    // package route
+    app.post("/addPackage", verifyToken, verifyAdmin, async (req, res) => {
+      const package = req.body;
+      const result = await packagesCollections.insertOne(package);
+      res.send(package);
     });
 
     // Send a ping to confirm a successful connection
