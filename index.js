@@ -32,6 +32,7 @@ async function run() {
     const packagesCollections = client.db("exploreDB").collection("packages");
     const bookingsCollections = client.db("exploreDB").collection("bookings");
     const wishListCollections = client.db("exploreDB").collection("wishList");
+    const storiesCollections = client.db("exploreDB").collection("stories");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -209,6 +210,40 @@ async function run() {
       }
       const query = { user: email };
       const result = await wishListCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete("/deleteWish/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await wishListCollections.deleteOne(query);
+      res.send(result);
+    });
+
+    // category data server
+    app.get("/byType/:type", async (req, res) => {
+      const category = req.params.type;
+      console.log(category);
+      const query = { type: category };
+      const result = await packagesCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/addStory", async (req, res) => {
+      const story = req.body;
+      const result = await storiesCollections.insertOne(story);
+      res.send(result);
+    });
+
+    app.get("/allStory", async (req, res) => {
+      const result = await storiesCollections.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/storyDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await storiesCollections.findOne(query);
       res.send(result);
     });
 
