@@ -31,6 +31,7 @@ async function run() {
     const usersCollections = client.db("exploreDB").collection("users");
     const packagesCollections = client.db("exploreDB").collection("packages");
     const bookingsCollections = client.db("exploreDB").collection("bookings");
+    const wishListCollections = client.db("exploreDB").collection("wishList");
 
     // jwt related api
     app.post("/jwt", async (req, res) => {
@@ -179,6 +180,35 @@ async function run() {
     app.post("/addBooking", async (req, res) => {
       const booking = req.body;
       const result = await bookingsCollections.insertOne(booking);
+      res.send(result);
+    });
+
+    app.get("/bookings", async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        return res.status(400).send({ error: "Email parameter is missing." });
+      }
+      const query = { email: email };
+      const result = await bookingsCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    // wishList server
+    app.post("/addWish", async (req, res) => {
+      const wish = req.body;
+
+      const result = await wishListCollections.insertOne(wish);
+      res.send(result);
+    });
+
+    app.get("/wishes", async (req, res) => {
+      const email = req.query.email;
+      console.log(email);
+      if (!email) {
+        return res.status(400).send({ error: "Email parameter is missing." });
+      }
+      const query = { user: email };
+      const result = await wishListCollections.find(query).toArray();
       res.send(result);
     });
 
