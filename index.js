@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const usersCollections = client.db("exploreDB").collection("users");
     const packagesCollections = client.db("exploreDB").collection("packages");
@@ -226,7 +226,6 @@ async function run() {
 
     app.get("/wishes", verifyToken, async (req, res) => {
       const email = req.query.email;
-      console.log(email);
       if (!email) {
         return res.status(400).send({ error: "Email parameter is missing." });
       }
