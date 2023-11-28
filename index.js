@@ -162,7 +162,7 @@ async function run() {
     app.post("/addPackage", verifyToken, verifyAdmin, async (req, res) => {
       const package = req.body;
       const result = await packagesCollections.insertOne(package);
-      res.send(package);
+      res.send(result);
     });
 
     app.get("/packages", async (req, res) => {
@@ -191,6 +191,18 @@ async function run() {
       }
       const query = { email: email };
       const result = await bookingsCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    app.put("/bookingCancel/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "rejected",
+        },
+      };
+      const result = await bookingsCollections.updateOne(query, updatedDoc);
       res.send(result);
     });
 
@@ -244,6 +256,41 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await storiesCollections.findOne(query);
+      res.send(result);
+    });
+
+    // assing tours server
+    app.get("/assignTours", async (req, res) => {
+      const email = req.query.email;
+      const query = {
+        "guide.email": email,
+        status: { $ne: "rejected" },
+      };
+      const result = await bookingsCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    app.put("/assignTourCancel/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "rejected",
+        },
+      };
+      const result = await bookingsCollections.updateOne(query, updatedDoc);
+      res.send(result);
+    });
+
+    app.put("/assignTourAccept/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "accepted",
+        },
+      };
+      const result = await bookingsCollections.updateOne(query, updatedDoc);
       res.send(result);
     });
 
