@@ -83,7 +83,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, async (req, res) => {
       const query = { role: { $nin: ["admin"] } };
       const result = await usersCollections.find(query).toArray();
       res.send(result);
@@ -102,29 +102,39 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/users/makeAdmin/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const updatedDoc = {
-        $set: {
-          role: "admin",
-        },
-      };
-      const result = await usersCollections.updateOne(query, updatedDoc);
-      res.send(result);
-    });
+    app.put(
+      "/users/makeAdmin/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: "admin",
+          },
+        };
+        const result = await usersCollections.updateOne(query, updatedDoc);
+        res.send(result);
+      }
+    );
 
-    app.put("/users/makeGuide/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const updatedDoc = {
-        $set: {
-          role: "guide",
-        },
-      };
-      const result = await usersCollections.updateOne(query, updatedDoc);
-      res.send(result);
-    });
+    app.put(
+      "/users/makeGuide/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: "guide",
+          },
+        };
+        const result = await usersCollections.updateOne(query, updatedDoc);
+        res.send(result);
+      }
+    );
 
     // check admin
     app.get("/users/admin/:email", verifyToken, async (req, res) => {
@@ -184,7 +194,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", verifyToken, async (req, res) => {
       const email = req.query.email;
       if (!email) {
         return res.status(400).send({ error: "Email parameter is missing." });
@@ -194,7 +204,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/bookingCancel/:id", async (req, res) => {
+    app.put("/bookingCancel/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -207,14 +217,14 @@ async function run() {
     });
 
     // wishList server
-    app.post("/addWish", async (req, res) => {
+    app.post("/addWish", verifyToken, async (req, res) => {
       const wish = req.body;
 
       const result = await wishListCollections.insertOne(wish);
       res.send(result);
     });
 
-    app.get("/wishes", async (req, res) => {
+    app.get("/wishes", verifyToken, async (req, res) => {
       const email = req.query.email;
       console.log(email);
       if (!email) {
@@ -225,7 +235,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/deleteWish/:id", async (req, res) => {
+    app.delete("/deleteWish/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await wishListCollections.deleteOne(query);
@@ -241,7 +251,8 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/addStory", async (req, res) => {
+    // story server
+    app.post("/addStory", verifyToken, async (req, res) => {
       const story = req.body;
       const result = await storiesCollections.insertOne(story);
       res.send(result);
@@ -260,7 +271,7 @@ async function run() {
     });
 
     // assing tours server
-    app.get("/assignTours", async (req, res) => {
+    app.get("/assignTours", verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = {
         "guide.email": email,
@@ -270,7 +281,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/assignTourCancel/:id", async (req, res) => {
+    app.put("/assignTourCancel/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -282,7 +293,7 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/assignTourAccept/:id", async (req, res) => {
+    app.put("/assignTourAccept/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const updatedDoc = {
